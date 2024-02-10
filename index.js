@@ -78,10 +78,25 @@ const purgeExempt = sequelize.define('Purge Exclusion List', {
         }
     ]
 });
+// Database - purge exemption table
+const dbSettings = sequelize.define('Settings', {
+	guildID: Sequelize.STRING,
+	name: Sequelize.STRING,
+	value: Sequelize.STRING,
+},
+{
+    indexes: [
+        {
+            unique: true,
+            fields: ['guildID', 'name']
+        }
+    ]
+});
 
 client.purgeTimes = purgeTimes;
 client.purgeList = purgeList;
 client.purgeExempt = purgeExempt;
+client.dbSettings = dbSettings;
 
 const eventsPath = path.join(__dirname, 'events');
 const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
