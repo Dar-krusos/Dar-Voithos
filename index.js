@@ -78,7 +78,8 @@ const purgeExempt = sequelize.define('Purge Exclusion List', {
         }
     ]
 });
-// Database - purge exemption table
+
+// Database - purge settings table
 const dbSettings = sequelize.define('Settings', {
 	guildID: Sequelize.STRING,
 	name: Sequelize.STRING,
@@ -93,10 +94,28 @@ const dbSettings = sequelize.define('Settings', {
     ]
 });
 
+// Timezone database initialise
+const timezoneDB = new Sequelize('timezones', 'user', 'password', {
+	host: 'localhost',
+	dialect: 'sqlite',
+	logging: false,
+	// SQLite only
+	storage: 'timezones.sqlite',
+});
+// Database - purge exemption table
+const timezones = timezoneDB.define('Timezones', {
+	name: {
+		type: Sequelize.STRING,
+		primaryKey: true,
+		unique: true,
+	},
+});
+
 client.purgeTimes = purgeTimes;
 client.purgeList = purgeList;
 client.purgeExempt = purgeExempt;
 client.dbSettings = dbSettings;
+client.timezones = timezones;
 
 const eventsPath = path.join(__dirname, 'events');
 const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));

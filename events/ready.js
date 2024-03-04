@@ -10,10 +10,12 @@ module.exports = {
 		const purgeList = client.purgeList;
 		const purgeExempt = client.purgeExempt;
 		const dbSettings = client.dbSettings;
+		const timezones = client.timezones;
 		purgeTimes.sync();
 		purgeList.sync();
 		purgeExempt.sync();
 		dbSettings.sync();
+		timezones.sync();
 	
 		setInterval(async () => {
 			// Check all active purge timers
