@@ -12,21 +12,25 @@ module.exports = {
 		const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 		
 		if (interaction.isChatInputCommand()) {
-			if (interaction.commandName != 'time')
+			if (interaction.commandName != 'react' && interaction.commandName != 'time')
 				await interaction.reply('Working...')
 			else
 				await interaction.reply({ content: 'Working...', ephemeral: true });
 
-			let scg;
-			let sc;
+			let scg = '';
+			let sc = '';
+			let subCommandGroup = `${interaction.options.getSubcommandGroup()}`;
+			if (subCommandGroup == 'null')
+				subCommandGroup = '';
+			else
+				scg = ` ${subCommandGroup}`;
 
-			try {
-				scg = ` ${interaction.options.getSubcommandGroup()}`;
-				sc = ` ${interaction.options.getSubcommand()}`;
-			} catch (error) {
-				scg = '';
-				sc = '';
-			};
+			let subCommand = `${interaction.options.getSubcommand()}`;
+			if (subCommand == 'null')
+				subCommand = '';
+			else
+				sc = ` ${subCommand}`;
+			
 			console.log(`${Date(interaction.createdTimestamp)}: Command sent by member:${interaction.user.id}: ${interaction.commandName}${scg}${sc}`);
 			guildID = `${interaction.guildId}`;
 			let window;
@@ -40,8 +44,8 @@ module.exports = {
 				} else console.log(error);
 			}
 			
-			if (interaction.commandName === 'purge' && interaction.options.getSubcommandGroup() === 'confirm') {
-				if (interaction.options.getSubcommand() === 'window') {
+			if (interaction.commandName === 'purge' && subCommandGroup === 'confirm') {
+				if (subCommand === 'window') {
 					try {
 						const setWindow = await dbSettings.create({
 							guildID: guildID,
@@ -63,8 +67,8 @@ module.exports = {
 							console.log(error);
 						}
 					}
-				} else if (interaction.options.getSubcommandGroup() === 'confirm' && window != '') {
-					if (interaction.options.getSubcommand() === 'execute') {
+				} else if (subCommandGroup() === 'confirm' && window != '') {
+					if (subCommand === 'execute') {
 						if (interaction.guild) {
 							try {
 								// Calculate purge time
@@ -150,7 +154,7 @@ module.exports = {
 						}
 					}
 		
-					if (interaction.options.getSubcommand() === 'cancel') {
+					if (subCommand === 'cancel') {
 						const clearTime = await purgeTimes.destroy({ where: { guildID: guildID } });
 
 						if (clearTime) {
@@ -161,8 +165,8 @@ module.exports = {
 					}
 				} else
 					interaction.editReply('No confirmation window set. Please set a length of time (`/purge confirm delay`).');
-			} else if (interaction.commandName === 'purge' && interaction.options.getSubcommandGroup() === 'settings') {
-				if (interaction.options.getSubcommand() === 'view') {
+			} else if (interaction.commandName === 'purge' && subCommandGroup() === 'settings') {
+				if (subCommand === 'view') {
 					let purgeTimeDates = 'none active';
 					let purgeExemptArr;
 
@@ -198,7 +202,7 @@ module.exports = {
 					interaction.editReply({ content: '', embeds: [settingsEmbed] });
 				}
 
-				if (interaction.options.getSubcommand() === 'exclude') {
+				if (subCommand === 'exclude') {
 					try {
 						const purgeExemption = await purgeExempt.create({
 							guildID: guildID,
@@ -219,7 +223,7 @@ module.exports = {
 					}
 				}
 	
-				if (interaction.options.getSubcommand() === 'remove-exclude') {
+				if (subCommand === 'remove-exclude') {
 					try {
 						const clearExemption = await purgeExempt.destroy({ where: { guildID: guildID, userID: interaction.options.getUser('username').id } });
 						await interaction.editReply('Exemption removed.');
@@ -228,9 +232,55 @@ module.exports = {
 				}
 	
 				// // to be added if requested
-				// if (interaction.options.getSubcommand() === 'eligibility') {
+				// if (subCommand === 'eligibility') {
 	
 				// }
+			}
+
+			if (interaction.commandName === 'react') {
+				let message;
+				try {
+					message = await interaction.channel.messages.fetch(interaction.options.get('message').value);
+				} catch (error) {
+					if (error.message == 'Unknown Message')
+						await interaction.editReply('Could not find that message ID in this channel.');
+					return;
+				}
+
+				let reaction = interaction.options.get('reaction').value;
+				if (subCommand === 'add') {
+					if (await message.reactions.resolve(reaction) != null) {
+						await interaction.editReply('I\'ve already reacted with that emoji.');
+						return;
+					}
+
+					try {
+						await message.react(reaction);
+						await interaction.editReply('Reaction added :)');
+					} catch (error) {
+						if (error.message === 'Unknown Emoji')
+							await interaction.editReply('Unknown reaction.');
+						else if (error.message === 'Missing Permissions')
+							await interaction.editReply('I have not been given permission to remove reactions (Manage Messages).');
+						else
+							console.log(error);
+						return;
+					}
+				}
+				else if (subCommand === 'remove') {
+					try {
+						await message.reactions.resolve(reaction).remove();
+						await interaction.editReply('Reaction removed.');
+					} catch (error) {
+						if (error.message === 'Unknown Emoji')
+							await interaction.editReply('Unknown reaction.');
+						else if (error.message.startsWith('Cannot read properties of null'))
+							await interaction.editReply('I have not reacted with that emoji yet.');
+						else if (error.message === 'Missing Permissions')
+							await interaction.editReply('I have not been given permission to remove reactions (Manage Messages).');
+						return;
+					}
+				}
 			}
 
 			if (interaction.commandName === 'time') {
