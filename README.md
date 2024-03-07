@@ -1,2 +1,2 @@
 # Dar-Voithos
-A Discord bot
+Dar-Krusos' butler
