@@ -17,21 +17,26 @@ module.exports = {
 			else
 				await interaction.reply({ content: 'Working...', ephemeral: true });
 
-			let scg = '';
-			let sc = '';
-			let subCommandGroup = `${interaction.options.getSubcommandGroup()}`;
-			if (subCommandGroup == 'null')
-				subCommandGroup = '';
-			else
-				scg = ` ${subCommandGroup}`;
+			let subCommandGroup = '';
+			let subCommand = '';
 
-			let subCommand = `${interaction.options.getSubcommand()}`;
-			if (subCommand == 'null')
-				subCommand = '';
-			else
-				sc = ` ${subCommand}`;
+			try {
+				subCommandGroup = `${interaction.options.getSubcommandGroup()}`
+			} catch (error) {
+				if (error.code != 'CommandInteractionOptionNoSubcommand') {
+					console.log(error);
+				}
+			}
+
+			try {
+				subCommand = `${interaction.options.getSubcommand()}`
+			} catch (error) {
+				if (error.code != 'CommandInteractionOptionNoSubcommand') {
+					console.log(error);
+				}
+			}
 			
-			console.log(`${Date(interaction.createdTimestamp)}: Command sent by member:${interaction.user.id}: ${interaction.commandName}${scg}${sc}`);
+			console.log(`${Date(interaction.createdTimestamp)}: Command sent by member:${interaction.user.id}: ${interaction.commandName} ${subCommandGroup} ${subCommand}`);
 			guildID = `${interaction.guildId}`;
 			let window;
 
