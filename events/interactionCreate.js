@@ -16,12 +16,18 @@ module.exports = {
 				await interaction.reply('Working...')
 			else
 				await interaction.reply({ content: 'Working...', ephemeral: true });
-
+			
 			let subCommandGroup = '';
 			let subCommand = '';
-
+			let scg = '';
+			let sc = '';
+			
 			try {
 				subCommandGroup = `${interaction.options.getSubcommandGroup()}`
+				if (subCommandGroup == 'null')
+					subCommandGroup = '';
+				else
+					scg = ` ${subCommandGroup}`;
 			} catch (error) {
 				if (error.code != 'CommandInteractionOptionNoSubcommand') {
 					console.log(error);
@@ -30,13 +36,17 @@ module.exports = {
 
 			try {
 				subCommand = `${interaction.options.getSubcommand()}`
+				if (subCommand == 'null')
+					subCommand = '';
+				else
+					sc = ` ${subCommand}`;
 			} catch (error) {
 				if (error.code != 'CommandInteractionOptionNoSubcommand') {
 					console.log(error);
 				}
 			}
-			
-			console.log(`${Date(interaction.createdTimestamp)}: Command sent by member:${interaction.user.id}: ${interaction.commandName} ${subCommandGroup} ${subCommand}`);
+
+			console.log(`${Date(interaction.createdTimestamp)}: Command sent by member:${interaction.user.id}: ${interaction.commandName}${scg}${sc}`);
 			guildID = `${interaction.guildId}`;
 			let window;
 
